@@ -22,17 +22,19 @@ extract_shellcode() {
 
 	echo '[+] Extract Shellcode from binary ...'
 	echo ''
-	objdump -d ${ARGV}         \
-		| grep '[0-9a-f]:' \
-		| grep -v 'file'   \
-		| cut -f2 -d:      \
-		| cut -f1-6 -d' '  \
-		| tr -s ' '        \
-		| tr '\t' ' '      \
-		| sed 's/ $//g'    \
-		| sed 's/ /\\x/g'  \
-		| paste -d '' -s   \
-		| grep -oE '.{1,32}'
+	objdump -d ${ARGV}       \
+		| grep '[0-9a-f]:'   \
+		| grep -v 'file'     \
+		| cut -f2 -d:        \
+		| cut -f1-6 -d' '    \
+		| tr -s ' '          \
+		| tr '\t' ' '        \
+		| sed 's/ $//g'      \
+		| sed 's/ /\\x/g'    \
+		| paste -d '' -s     \
+		| grep -oE '.{1,32}' \
+		| sed 's/^/"/'       \
+		| sed 's/$/"/g'
 	echo ''
 }
 
