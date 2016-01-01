@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
+# $Id: build.sh,v 1.2 2016/01/01 20:06:42 dhn Exp $
 
-# Title: assembles, links and extracts shellcode from binary
+# Title: assembles, links and extracts
+#        shellcode from binary
 # File: build.sh
 # Author: Dennis 'dhn' Herrmann
 # SLAE-721
@@ -8,20 +10,22 @@
 build() {
 	local ARGV=${1}
 
-	echo '[+] Assembling ... '
+	printf '[+] Assembling ...\n'
 	nasm -f elf32 -o ${ARGV}.o ${ARGV}.nasm
+	nasm ${ARGV}.nasm -o ${ARGV}.bin
 }
 
 link() {
-	echo '[+] Linking ...'
-	ld -o $1 $1.o
+	local ARGV=${1}
+
+	printf '[+] Linking ...\n'
+	ld -o ${ARGV} ${ARGV}.o
 }
 
 extract_shellcode() {
 	local ARGV=${1}
 
-	echo '[+] Extract Shellcode from binary ...'
-	echo ''
+	printf '[+] Extract Shellcode from binary ...\n\n'
 	objdump -d ${ARGV}       \
 		| grep '[0-9a-f]:'   \
 		| grep -v 'file'     \
@@ -35,10 +39,42 @@ extract_shellcode() {
 		| grep -oE '.{1,32}' \
 		| sed 's/^/"/'       \
 		| sed 's/$/"/g'
-	echo ''
+	printf '\n'
+}
+
+create_header() {
+	local ARGV=${1}
+
+	printf '[+] Create C-Header file ...\n'
+	xxd -i ${ARGV}.bin \
+		| sed "s/${ARGV}_bin/code/g" > shellcode.h
+}
+
+build_c() {
+	local ARGV=${1}
+
+	printf '[+] Compile PoC ...\n'
+	gcc -Wl,-z,execstack \
+		-fno-stack-protector shellcode.c -o shellcode
+}
+
+run_shellcode() {
+	printf '[+] Run PoC ...\n\n'
+	./shellcode
+}
+
+clean() {
+	local ARGV=${1}
+
+	printf '[+] Clean ...\n'
+	rm -f *.o *.bin shellcode ${ARGV}
 }
 
 build $1
 link $1
 extract_shellcode $1
+create_header $1
+build_c $1
+run_shellcode
+clean $1
 echo '[+] Done!'
