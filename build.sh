@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
-# $Id: build.sh,v 1.2 2016/01/01 20:06:42 dhn Exp $
+# $Id: build.sh,v 1.3 2016/01/01 22:18:38 dhn Exp $
 
 # Title: assembles, links and extracts
 #        shellcode from binary
 # File: build.sh
 # Author: Dennis 'dhn' Herrmann
 # SLAE-721
+
+create_shellcode_file() {
+cat << EOF > shellcode.c
+#include <stdio.h>
+#include "shellcode.h"
+
+void main()
+{
+	printf("Shellcode Length:  %d\n", code_len);
+	int (*ret)() = (int(*)())code;
+	ret();
+}
+EOF
+}
 
 build() {
 	local ARGV=${1}
@@ -53,6 +67,11 @@ create_header() {
 build_c() {
 	local ARGV=${1}
 
+	# create shellcode.c
+	if [ ! -f ./shellcode.c ]; then
+		create_shellcode_file
+	fi
+
 	printf '[+] Compile PoC ...\n'
 	gcc -Wl,-z,execstack \
 		-fno-stack-protector shellcode.c -o shellcode
@@ -67,7 +86,7 @@ clean() {
 	local ARGV=${1}
 
 	printf '[+] Clean ...\n'
-	rm -f *.o *.bin shellcode ${ARGV}
+	rm -f *.o *.bin shellcode* ${ARGV}
 }
 
 build $1
