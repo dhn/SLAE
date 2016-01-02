@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# $Id: build.sh,v 1.3 2016/01/01 22:18:38 dhn Exp $
+# $Id: build.sh,v 1.4 2016/01/02 17:13:44 dhn Exp $
 
 # Title: assembles, links and extracts
 #        shellcode from binary
@@ -7,17 +7,40 @@
 # Author: Dennis 'dhn' Herrmann
 # SLAE-721
 
+export PATH=/sbin:/usr/sbin:/bin:/usr/bin
+export LC_ALL="C"
+
+OBJDUMP=${OBJDUMP:-objdump}
+NASM=${NASM:-nasm}
+XXD=${XXD:-xxd}
+GCC=${GCC:-gcc}
+LD=${LD:-ld}
+
+# DEBUG
+DEBUG="false"
+
+# Activate debugging
+if [ "${DEBUG}" == "true" ]; then
+	printf '[!] DEBUG is activated ...\n'
+	set -x
+fi
+
+die() {
+	printf "ERROR: $*\n" >&2;
+	exit 1;
+}
+
 create_shellcode_file() {
 cat << EOF > shellcode.c
-#include <stdio.h>
-#include "shellcode.h"
+	#include <stdio.h>
+	#include "shellcode.h"
 
-void main()
-{
-	printf("Shellcode Length:  %d\n", code_len);
-	int (*ret)() = (int(*)())code;
-	ret();
-}
+	void main()
+	{
+		printf("[+] Shellcode Length:  %d\n", code_len);
+		int (*ret)() = (int(*)())code;
+		ret();
+	}
 EOF
 }
 
@@ -25,22 +48,30 @@ build() {
 	local ARGV=${1}
 
 	printf '[+] Assembling ...\n'
-	nasm -f elf32 -o ${ARGV}.o ${ARGV}.nasm
-	nasm ${ARGV}.nasm -o ${ARGV}.bin
+	${NASM} -f elf32 -o ${ARGV}.o ${ARGV}.nasm > /dev/null 2>&1
+	${NASM} ${ARGV}.nasm -o ${ARGV}.bin > /dev/null 2>&1
+
+	if [ ! ${?} -eq 0 ]; then
+		die "Unable to compile: ${ARGV}"
+	fi
 }
 
 link() {
 	local ARGV=${1}
 
 	printf '[+] Linking ...\n'
-	ld -o ${ARGV} ${ARGV}.o
+	${LD} -o ${ARGV} ${ARGV}.o
+
+	if [ ! ${?} -eq 0 ]; then
+		die "Unable to link: ${ARGV}"
+	fi
 }
 
 extract_shellcode() {
 	local ARGV=${1}
 
 	printf '[+] Extract Shellcode from binary ...\n\n'
-	objdump -d ${ARGV}       \
+	${OBJDUMP} -d ${ARGV}    \
 		| grep '[0-9a-f]:'   \
 		| grep -v 'file'     \
 		| cut -f2 -d:        \
@@ -60,7 +91,7 @@ create_header() {
 	local ARGV=${1}
 
 	printf '[+] Create C-Header file ...\n'
-	xxd -i ${ARGV}.bin \
+	${XXD} -i ${ARGV}.bin \
 		| sed "s/${ARGV}_bin/code/g" > shellcode.h
 }
 
@@ -70,30 +101,70 @@ build_c() {
 	# create shellcode.c
 	if [ ! -f ./shellcode.c ]; then
 		create_shellcode_file
-	fi
+		build_c ${ARGV}
+	else
+		printf '[+] Compile PoC ...\n'
+		${GCC} -Wl,-z,execstack -fno-stack-protector \
+			shellcode.c -o shellcode > /dev/null 2>&1
 
-	printf '[+] Compile PoC ...\n'
-	gcc -Wl,-z,execstack \
-		-fno-stack-protector shellcode.c -o shellcode
+		if [ ! ${?} -eq 0 ]; then
+			die "Unable to compile: shellcode.c"
+		fi
+	fi
 }
 
 run_shellcode() {
-	printf '[+] Run PoC ...\n\n'
+	printf '[+] Run PoC ...\n'
 	./shellcode
 }
 
 clean() {
 	local ARGV=${1}
 
-	printf '[+] Clean ...\n'
+	printf '\n[+] Clean ...\n'
 	rm -f *.o *.bin shellcode* ${ARGV}
+	printf '[+] Done!\n'
 }
 
-build $1
-link $1
-extract_shellcode $1
-create_header $1
-build_c $1
-run_shellcode
-clean $1
-echo '[+] Done!'
+main() {
+	local ARG=${1}
+
+	build ${ARG}
+	link ${ARG}
+	extract_shellcode ${ARG}
+	create_header ${ARG}
+	build_c ${ARG}
+	run_shellcode
+	clean ${ARG}
+}
+
+usage() {
+cat << EOF
+Usage: $(basename $0) [OPTIONS] file
+Options:
+  -b file  Assembles, links and extracts
+           shellcode from binary.
+  -h       Display usage
+Example:
+  $(basename $0) -b <*.nasm>
+EOF
+}
+
+# getopts
+while getopts "b:h" opt; do
+	case $opt in
+		b)
+			main ${OPTARG}
+			;;
+		h)
+			usage
+			;;
+	esac
+done
+shift $((OPTIND -1))
+
+# Default - usage
+if [ ${OPTIND} -eq 1 ]; then
+	usage
+	exit 0
+fi
