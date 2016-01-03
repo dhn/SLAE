@@ -71,7 +71,7 @@ extract_shellcode() {
 	local ARGV=${1}
 
 	printf '[+] Extract Shellcode from binary ...\n\n'
-	${OBJDUMP} -d ${ARGV}    \
+	${OBJDUMP} -d ${ARGV}        \
 		| grep '[0-9a-f]:'   \
 		| grep -v 'file'     \
 		| cut -f2 -d:        \
@@ -121,9 +121,10 @@ run_shellcode() {
 clean() {
 	local ARGV=${1}
 
-	printf '\n[+] Clean ...\n'
-	rm -f *.o *.bin shellcode* ${ARGV}
-	printf '[+] Done!\n'
+	if [ -z ${CLEAN} ]; then
+		printf '[+] Clean ...\n'
+		rm -f *.o *.bin shellcode* ${ARGV}
+	fi
 }
 
 main() {
@@ -136,6 +137,7 @@ main() {
 	build_c ${ARG}
 	run_shellcode
 	clean ${ARG}
+	printf '[+] Done!\n'
 }
 
 usage() {
@@ -144,6 +146,7 @@ Usage: $(basename $0) [OPTIONS] file
 Options:
   -b file  Assembles, links and extracts
            shellcode from binary.
+  -c       Disable cleaning
   -h       Display usage
 Example:
   $(basename $0) -b <*.nasm>
@@ -151,10 +154,13 @@ EOF
 }
 
 # getopts
-while getopts "b:h" opt; do
+while getopts "b:ch" opt; do
 	case $opt in
 		b)
 			main ${OPTARG}
+			;;
+		c)
+			CLEAN="false"
 			;;
 		h)
 			usage
