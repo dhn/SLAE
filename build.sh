@@ -114,8 +114,10 @@ build_c() {
 }
 
 run_shellcode() {
-	printf '[+] Run PoC ...\n'
-	./shellcode
+	if [ -z ${RUN} ]; then
+		printf '[+] Run PoC ...\n'
+		./shellcode
+	fi
 }
 
 clean() {
@@ -147,6 +149,7 @@ Options:
   -b file  Assembles, links and extracts
            shellcode from binary.
   -c       Disable cleaning
+  -r       Disable run PoC
   -h       Display usage
 Example:
   $(basename $0) -b <*.nasm>
@@ -154,13 +157,16 @@ EOF
 }
 
 # getopts
-while getopts "b:ch" opt; do
+while getopts "b:crh" opt; do
 	case $opt in
 		b)
 			main ${OPTARG}
 			;;
 		c)
 			CLEAN="false"
+			;;
+		r)
+			RUN="false"
 			;;
 		h)
 			usage
