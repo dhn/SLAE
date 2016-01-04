@@ -110,7 +110,6 @@ listen:
 	int 0x80               ; syscall listen()
 
 accept:
-
 	; accept(sockfd, struct, len(struct));
 	;   |   |  |        |         |     |
 	;  0x5  | edi      NULL      NULL   |
