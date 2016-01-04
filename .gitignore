@@ -58,3 +58,6 @@ target/
 
 # Object Files
 *.o
+
+# Vim swap files
+*.swp
