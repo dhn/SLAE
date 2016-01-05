@@ -150,7 +150,7 @@ execve:
 	;   |    |         |  |  |
 	;  0x11  |         |  | edx
 	;   |    \__ esp __/ ecx
-	;  eax         |
+	;  eax        |
 	;            ebx
 	push SYS_EXECVE        ; syscall = 0x11
 	pop eax                ; set SYS_EXECVE to eax
