@@ -53,7 +53,7 @@ socket:
 
 	int 0x80               ; syscall socket()
 
-	pop edi                ; set esi to 0x02
+	pop edi                ; set edi to 0x02
 
 	; save the file descriptor (sockfd) into edi.
 	; change edi against eax, eax has now the
