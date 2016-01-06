@@ -94,7 +94,7 @@ connect:
 
 	int 0x80               ; syscall connect()
 
-	; we use the fact that the ebx register is even 0x02.
+	; we use the fact that the ebx register is even 0x03.
 	mov ecx, ebx           ; use the ebx value: 0x03
 dup2:
 	; dup2(oldfd, newfd);
