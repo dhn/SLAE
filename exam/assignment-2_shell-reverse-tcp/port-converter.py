@@ -26,11 +26,16 @@ def convert_port(port):
         sys.exit(1)
 
 def convert_ip_addr(ip_addr):
-    ip_addr_hex = ""
-    for byte in ip_addr[::-1]:
-        ip_addr_hex += str(hex(int(byte)))[2:]
+    ip_addr_hex = hex(int(ip_addr))[2:]
 
-    return "0x" + ip_addr_hex
+    if len(ip_addr_hex) < 2:
+        ip_addr_hex = "0" + ip_addr_hex
+
+    if ip_addr_hex == "00":
+        print("[!] The final shellcode has '\\x00' inside")
+        sys.exit(1)
+
+    return ip_addr_hex
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
@@ -39,8 +44,12 @@ if __name__ == "__main__":
         port = int(sys.argv[2])
         ip_addr = str(sys.argv[1])
         network, inhex = convert_port(port)
-        ip_addr_hex = convert_ip_addr(ip_addr.split('.'))
+
+        ip_addr_hex = ""
+        for i in range(0,4):
+            ip_addr_hex += convert_ip_addr(ip_addr.split('.')[i])
+
         print("port in dec: %s" % port)
         print("port in hex: %s" % inhex)
         print("IP address: %s" % ip_addr)
-        print("IP address in hex: %s" % ip_addr_hex)
+        print("IP address in hex: 0x%s" % ip_addr_hex[::-1])
