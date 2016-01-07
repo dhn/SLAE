@@ -27,7 +27,7 @@ def convert_port(port):
 
 def convert_ip_addr(ip_addr):
     ip_addr_hex = ""
-    for byte in ip_addr:
+    for byte in ip_addr[::-1]:
         ip_addr_hex += str(hex(int(byte)))[2:]
 
     return "0x" + ip_addr_hex
