@@ -47,9 +47,9 @@ if __name__ == "__main__":
 
         ip_addr_hex = ""
         for i in range(0,4):
-            ip_addr_hex += convert_ip_addr(ip_addr.split('.')[i])
+            ip_addr_hex += convert_ip_addr(ip_addr.split('.')[::-1][i])
 
         print("port in dec: %s" % port)
         print("port in hex: %s" % inhex)
         print("IP address: %s" % ip_addr)
-        print("IP address in hex: 0x%s" % ip_addr_hex[::-1])
+        print("IP address in hex: 0x%s" % ip_addr_hex)
