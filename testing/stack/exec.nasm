@@ -16,22 +16,15 @@ SYS_EXECVE equ 0x0b
 _start:
 
 	; execve("/bin//sh", 0, 0);
+	;             |       |  |
+	;            ebx      | edx
+	;                    ecx
 	push SYS_EXECVE ; SYS_EXECVE = 11
 	pop eax         ; set SYS_EXECVE to eax
-
 	xor ecx, ecx    ; clean esi
 	push ecx        ; esi is zero
 	push 0x68732f2f ; push 'hs//'
 	push 0x6e69622f ; push 'nib/'
-
-	; execve("/bin//sh/", 0, 0);
-	;             |
-	;            ebx
-	mov ebx, esp
-
-	; execve("/bin//sh/", 0, 0);
-	;                     ^  |
-	;                     | edx
-	;                    ecx
+	mov ebx, esp    ; save pointer to ebx
 	mov edx, ecx    ; set zero to edx
 	int 0x80        ; syscall execve
