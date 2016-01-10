@@ -81,9 +81,10 @@ def fmt_output(text, lines):
 # Main function
 if __name__ == "__main__":
     encoded_hex, encoded_nasm = rol_xor_encoder(5, 8, 0x5f)
+    encoded_len = str(len(encoded_hex)/4)
     print("[*] Hex version ...\n\n%s\n" % fmt_output(encoded_hex, 32))
     print("[*] Nasm version ...\n\n%s\n" % fmt_output(encoded_nasm, 30))
-    print("[*] Encoded shellcode length: %s bytes" % str(len(encoded_hex)/4))
+    print("[*] Encoded shellcode length: %s bytes" % encoded_len)
 
     decoded_hex = rol_xor_decoder(5, 8, 0x5f)
     decoded_len = str(len(decoded_hex)/4)
