@@ -61,3 +61,6 @@ target/
 
 # Vim swap files
 *.swp
+
+# gdb history
+.gdb_history
