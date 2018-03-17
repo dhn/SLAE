@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# $Id: build.sh,v 1.4 2016/01/02 17:13:44 dhn Exp $
+# $Id: build.sh,v 1.5 2018/03/17 22:13:58 dhn Exp $
 
 # Title: assembles, links and extracts
 #        shellcode from binary
