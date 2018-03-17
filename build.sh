@@ -60,7 +60,11 @@ link() {
 	local ARGV=${1}
 
 	printf '[+] Linking ...\n'
-	${LD} -o ${ARGV} ${ARGV}.o
+	if [[ "$(uname -m)" == "x86_64" ]]; then
+		FLAG="-m elf_i386"
+	fi
+
+	${LD} ${FLAG} -o ${ARGV} ${ARGV}.o
 
 	if [ ! ${?} -eq 0 ]; then
 		die "Unable to link: ${ARGV}"
@@ -89,10 +93,12 @@ extract_shellcode() {
 
 create_header() {
 	local ARGV=${1}
+	local FFILE=$(echo ${ARGV} \
+		| sed -e "s#/#_#g" -e "s#-#_#g")
 
 	printf '[+] Create C-Header file ...\n'
 	${XXD} -i ${ARGV}.bin \
-		| sed "s/${ARGV}_bin/code/g" > shellcode.h
+		| sed "s/${FFILE}_bin/code/g" > shellcode.h
 }
 
 build_c() {
@@ -104,7 +110,11 @@ build_c() {
 		build_c ${ARGV}
 	else
 		printf '[+] Compile PoC ...\n'
-		${GCC} -Wl,-z,execstack -fno-stack-protector \
+		if [[ "$(uname -m)" == "x86_64" ]]; then
+			FLAG="-m32"
+		fi
+
+		${GCC} ${FLAG} -Wl,-z,execstack -fno-stack-protector \
 			shellcode.c -o shellcode > /dev/null 2>&1
 
 		if [ ! ${?} -eq 0 ]; then
@@ -125,7 +135,7 @@ clean() {
 
 	if [ -z ${CLEAN} ]; then
 		printf '[+] Clean ...\n'
-		rm -f *.o *.bin shellcode* ${ARGV}
+		rm -f *.o *.bin shellcode* ${ARGV} ${ARGV}.bin
 	fi
 }
 
